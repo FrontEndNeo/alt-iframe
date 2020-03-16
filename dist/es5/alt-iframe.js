@@ -3,7 +3,7 @@
  * - A simple native JavaScript (ES5) utility library to include partial HTML(s).
  * - You don't need a framework or jQuery!!!
  *
- * version: 1.0.0
+ * version: 1.1.1
  *
  * License: MIT
  *
