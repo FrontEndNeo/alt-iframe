@@ -98,11 +98,8 @@
   function onXhrStateChange () {
     if (this.readyState != 4) return;
     var xhrStatus = this.status;
-    if ((xhrStatus >= 200 && xhrStatus < 300) || (xhrStatus == 304)) {
-      updateElContent(this.targetEl, this.responseText);
-    } else {
-      updateElContent(this.targetEl, 'Failed ('+xhrStatus+':'+this.statusText+') to load ['+this.responseURL+']');
-    }
+    var resTxt = ((xhrStatus >= 200 && xhrStatus < 300) || (xhrStatus == 304))? this.responseText : ('Cannot GET '+this.responseURL);
+    updateElContent(this.targetEl, resTxt);
   }
 
   function loadExternalSrc (targetEl, srcPath) {
@@ -110,12 +107,10 @@
     targetEl.setAttribute('x-src', srcPath);
     targetEl.removeAttribute('src');
     if (srcPath) {
-      var xhr     = new XMLHttpRequest();
-      var isAsync = !targetEl.hasAttribute('await');
-
-      xhr.targetEl           = targetEl;
+      var xhr      = new XMLHttpRequest();
+      xhr.targetEl = targetEl;
       xhr.onreadystatechange = onXhrStateChange;
-      xhr.open('GET', srcPath, isAsync);
+      xhr.open('GET', srcPath, !targetEl.hasAttribute('await'));
       xhr.send();
     }
   }
@@ -125,20 +120,18 @@
     var targetEl = _doc.querySelector( clickedEl.getAttribute('x-target') );
 
     if (targetEl) {
-      if (targetEl.tagName.indexOf('REPLACE') < 0) {
-        targetEl.removeAttribute('replace');
-        if (clickedEl.hasAttribute('await')) {
-          targetEl.setAttribute('await', '');
-        } else {
-          targetEl.removeAttribute('await');
-        }
+      targetEl[clickedEl.hasAttribute('replace')? 'setAttribute': 'removeAttribute']('replace', '');
 
-        loadExternalSrc(targetEl, clickedEl.getAttribute('x-href').substring(1) );
-      } else {
-        console.warn('Target element cannot be replaced. Invalid target specified in element', clickedEl);
+      if (clickedEl.hasAttribute('await')) {
+        targetEl.setAttribute('await', '');
       }
+      if (clickedEl.hasAttribute('async')) {
+        targetEl.removeAttribute('await', '');
+      }
+
+      loadExternalSrc(targetEl, clickedEl.getAttribute('x-href').substring(1) );
     } else {
-      console.warn('Invalid target specified in element', clickedEl);
+      console.warn('Target element not found. Invalid target specified in element', clickedEl);
     }
   }
 
