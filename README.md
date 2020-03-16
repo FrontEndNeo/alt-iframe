@@ -4,6 +4,7 @@ A simple javascript utility library to include partial html (iframe alternate) w
     <!doctype html>
     <html lang="en">
     <head>
+      <meta charset="UTF-8">
       <title>Single HTML Page</title>
     </head>
     <body>
