@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Static SPA (slim)</title>
+
+  <!-- bootstrap styles -->
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/bootstrap@4.3.1/dist/css/bootstrap.min.css">
+
+  <!-- custom styles -->
+  <style>
+    .fixed-bottom {
+      height: 50px;
+      padding: 10px;
+      color: #fff;
+      background-color: #000;
+      text-align: left;
+      position: fixed;
+      left:0;
+      bottom:0;
+      width: 100%;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- use [src] to load partial html inside the tag -->
+  <header src="html-files/header.html"></header>
+
+  <!-- use [id] to load partial html on click of en element (refer header.html: <a> and <button> tags) -->
+  <main src="html-files/home.html" id="containerMain"></main>
+
+  <!-- use [replace] attribute to replace the tag with partial html content -->
+  <div src="html-files/footer.html" replace></div>
+
+  <!-- bootstrap + dependency scripts -->
+  <script src="//cdn.jsdelivr.net/npm/jquery@latest/dist/jquery.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/popper.js@latest/dist/umd/popper.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/bootstrap@4.3.1/dist/js/bootstrap.min.js"></script>
+
+  <!-- include library script -->
+  <script src="../../dist/alt-iframe.min.js"></script>
+</body>
+</html>
