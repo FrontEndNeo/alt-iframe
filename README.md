@@ -27,5 +27,6 @@ A simple javascript utility library to include partial html (iframe alternate) w
       ...
       ...
       <script src="https://cdn.jsdelivr.net/gh/frontendneo/alt-iframe/dist/es5/alt-iframe.min.js"></script>
+
     </body>
     </html>

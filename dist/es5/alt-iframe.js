@@ -3,30 +3,12 @@
  * - A simple native JavaScript (ES5) utility library to include partial HTML(s).
  * - You don't need a framework or jQuery!!!
  *
- * version: 1.1.1
+ * version: 1.1.2
  *
  * License: MIT
  *
  * USAGE:
- * <!doctype html>
- * <html lang="en">
- * <head>
- *   <title>Single HTML Page</title>
- * </head>
- * <body>
- *   ...
- *   <div src="partial-html-files/header.html"></div>
- *   ...
- *   <br src="partial-html-files/footer.html" replace >
- *   ...
- *   <a href="#partial-html-files/profile.html" target="#targetContainer">Profile</a>
- *   ...
- *   <button href="#partial-html-files/profile.html" target="#targetContainer">Profile</button>
- *   ...
- *   ...
- *   <script src="path-to-this-script-file"></script>
- * </body>
- * </html>
+ * see example at https://github.com/FrontEndNeo/alt-iframe
 */
 (function(_g){
 
