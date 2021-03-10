@@ -1,0 +1,16 @@
+<ul class="navbar-nav mr-auto">
+  <li class="nav-item active">
+    <!-- use [href] and [target] to load partial html -->
+    <a class="nav-link" href="#home+" target="#containerMain">Home</a> <!-- path resolves to "html-files/home.html" -->
+  </li>
+  <li class="nav-item">
+    <!-- use [href] and [target] to load partial html -->
+    <a class="nav-link" href="#profile+" target="#containerMain">Profile</a> <!-- path resolves to "html-files/profile.html" -->
+  </li>
+</ul>
+
+<script>
+  $(document).on('click', '.navbar-nav .nav-link', function(){
+    $(this).closest('li.nav-item').addClass('active').siblings().removeClass('active');
+  });
+</script>

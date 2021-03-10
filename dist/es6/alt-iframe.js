@@ -3,7 +3,7 @@
  * - A simple native JavaScript (ES6+) utility library to include partial HTML(s).
  * - You don't need a framework or jQuery!!!
  *
- * version: 1.1.2
+ * version: 1.2.0
  *
  * License: MIT
  *
@@ -12,7 +12,7 @@
 */
 (function(_g){
 
-  let _doc  = document;
+  let _doc = document, _htmlDir, _htmlExt;
 
   function getElements (selector, el) {
     el = ((typeof el == 'string') && _doc.querySelector(el)) || el || _doc;
@@ -54,6 +54,11 @@
   }
 
   function updateElContent (targetEl, content) {
+    let appendScript = targetEl.getAttribute('x-js');
+    if (appendScript) {
+      content += '<script src="'+appendScript+'"></script>';
+      targetEl.removeAttribute('x-js');
+    }
     if (targetEl.tagName == 'SCRIPT') {
       if (content.trim()) {
         let xScript = document.createElement( "script" );
@@ -77,11 +82,24 @@
     }
   }
 
+  function getSrcPath ( srcPath ) {
+    let finalPath = (srcPath || '').trim();
+    let appendScript = /\+$/.test(finalPath)? '+':'';
+    if (appendScript) finalPath = finalPath.substring(0, finalPath.length-1);
+    _htmlDir && (finalPath = /^[^a-z0-9_]/gi.test(finalPath[0])? finalPath.substring(1) : (_htmlDir+'/'+finalPath))
+    _htmlExt && (finalPath = (finalPath[finalPath.length-1] == '/')? finalPath.substring(0, finalPath.length-1) : (finalPath+_htmlExt));
+    return finalPath+appendScript;
+  }
+
   function loadExternalSrc (targetEl, srcPath) {
-    srcPath = srcPath || (targetEl.getAttribute('src') || '').trim();
+    srcPath = getSrcPath(srcPath || (targetEl.getAttribute('src')) );
     targetEl.setAttribute('x-src', srcPath);
     targetEl.removeAttribute('src');
     if (srcPath) {
+      if (/\+$/.test(srcPath)) { //appendScript
+        targetEl.setAttribute('x-js', srcPath.replace(/\.[a-z]{3,4}\+$/, '.js'));
+        srcPath = srcPath.substring(0, srcPath.length-1);
+      }
       if (targetEl.hasAttribute('await')) {
         (async () => {
           const res = await fetch(srcPath).catch( e => null );
@@ -135,6 +153,8 @@
   }
 
   function onDocReady () {
+    _htmlDir = (_doc.body.getAttribute('components-loc') || '').replace(/\/+$/g,'').trim();
+    _htmlExt = (_doc.body.getAttribute('components-ext') || '').trim();
     processIncludes();
   }
 
