@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" href="data:image/x-icon;base64,">
   <title>alt-iframe</title>
 
   <!-- bootstrap styles -->
@@ -23,13 +24,14 @@
     }
   </style>
 </head>
-<body components-loc="components" components-ext=".html"> <!-- using [default-components-location] and [default-components-ext] -->
+<body components-loc="components" components-ext=".html" hash-error="alert"> <!-- using [default-components-location] and [default-components-ext] -->
 
   <!-- use [src] attribute to load a partial html inside the tag -->
   <header src="header"></header> <!-- path resolves to "components/header.html" -->
 
   <!-- use [id] attribute to load partial html on click of en element (refer header.html: <a> and <button> tags) -->
-  <main src="home+" id="containerMain"></main> <!-- path resolves to "components/home.html" -->
+  <!-- [skip-on-hash] attribute will skip initial [src] if the page is loaded with a hash in the url -->
+  <main src="home+" id="containerMain" skip-on-hash></main> <!-- path resolves to "components/home.html" -->
 
   <!-- use [replace] attribute to replace the tag with partial html content -->
   <div src="footer" replace></div> <!-- path resolves to "components/footer.html" -->

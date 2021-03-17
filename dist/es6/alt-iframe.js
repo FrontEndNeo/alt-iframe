@@ -3,7 +3,7 @@
  * - A simple native JavaScript (ES6+) utility library to include partial HTML(s).
  * - You don't need a framework or jQuery!!!
  *
- * version: 1.2.0
+ * version: 1.3.0
  *
  * License: MIT
  *
@@ -12,7 +12,17 @@
 */
 (function(_g){
 
-  let _doc = document, _htmlDir, _htmlExt;
+  let _doc = document, _loc = _doc.location, _htmlDir, _htmlExt, _urlHash, _prvHash, _curHash, _pending;
+
+  window.onhashchange = function() {
+    _curHash = _loc.hash || '';
+    if (!_curHash) {
+      _loc.reload();
+    } else if (_curHash != _prvHash) {
+      _urlHash = _curHash;
+      loadUrlHash();
+    }
+  }
 
   function getElements (selector, el) {
     el = ((typeof el == 'string') && _doc.querySelector(el)) || el || _doc;
@@ -53,7 +63,43 @@
     });
   }
 
+  function handleHashNotFound () {
+    let hashErrMode = (_doc.body.getAttribute('hash-error') || '').toLowerCase();
+    let redirectUrl = _loc.origin + _loc.pathname + _loc.search;
+    let eMsg;
+    if (hashErrMode == 'alert') {
+      eMsg = 'Page route[' + (_urlHash.substring(1)) + '] not found! Redirecting to this page root.';
+      alert(eMsg);
+    } else if (hashErrMode == 'url') {
+      eMsg = 'Page_route[' + (_urlHash.substring(1)) + ']_not_found!_Redirected_to_this_page_root.';
+      redirectUrl = _loc.origin + _loc.pathname + '?_error=' + eMsg + (_loc.search.replace(/^\?/,'&'));
+    }
+    _loc.href = redirectUrl;
+  }
+
+  function loadUrlHash () {
+    if (_urlHash) {
+      let elHash = getElements('[x-href="'+_urlHash+'"][x-target^="#"]');
+      if (elHash.length) {
+        _urlHash = '';
+        _prvHash = _curHash;
+        elHash[0].click();
+      } else {
+        (!(_pending || getAltIframeElements().length)) && handleHashNotFound();
+      }
+    } else {
+      let hashLockEls = getElements('[skip-on-hash]');
+      if (hashLockEls.length) {
+        hashLockEls.forEach(el=>{
+          el.removeAttribute('skip-on-hash');
+        });
+        processIncludes();
+      }
+    }
+  }
+
   function updateElContent (targetEl, content) {
+    _pending--;
     let appendScript = targetEl.getAttribute('x-js');
     if (appendScript) {
       content += '<script src="'+appendScript+'"></script>';
@@ -61,10 +107,10 @@
     }
     if (targetEl.tagName == 'SCRIPT') {
       if (content.trim()) {
-        let xScript = document.createElement( "script" );
+        let xScript = _doc.createElement( "script" );
         xScript.id = (new Date()).getMilliseconds();
         xScript.text = content;
-        document.head.appendChild( xScript ).parentNode.removeChild( xScript );
+        _doc.head.appendChild( xScript ).parentNode.removeChild( xScript );
       }
     } else {
       content = (content || '').replace(/<(\/)*script/gi, '<$1x-script');
@@ -80,6 +126,7 @@
         processIncludes( targetEl );
       }
     }
+    loadUrlHash();
   }
 
   function getSrcPath ( srcPath ) {
@@ -96,6 +143,7 @@
     targetEl.setAttribute('x-src', srcPath);
     targetEl.removeAttribute('src');
     if (srcPath) {
+      _pending++;
       if (/\+$/.test(srcPath)) { //appendScript
         targetEl.setAttribute('x-js', srcPath.replace(/\.[a-z]{3,4}\+$/, '.js'));
         srcPath = srcPath.substring(0, srcPath.length-1);
@@ -116,6 +164,15 @@
     }
   }
 
+  function updateHistory ( newHash ) {
+    if (_prvHash != newHash) {
+      _prvHash = newHash;
+      try {
+        history.pushState(null, newHash, newHash);
+      } catch (e) {}
+    }
+  }
+
   function onNavElClick () {
     let clickedEl = this;
     let targetEl = _doc.querySelector( clickedEl.getAttribute('x-target') );
@@ -130,16 +187,26 @@
         targetEl.removeAttribute('await', '');
       }
 
-      loadExternalSrc(targetEl, clickedEl.getAttribute('x-href').substring(1) );
+      let xHref = clickedEl.getAttribute('x-href').substring(1);
+      if (/^[#! ]/.test(xHref)) {
+        xHref = xHref.substring(1).trim();
+      } else {
+        updateHistory( '#'+xHref );
+      }
+      loadExternalSrc(targetEl, xHref);
     } else {
       console.warn('Target element not found. Invalid target specified in element', clickedEl);
     }
   }
 
+  function getAltIframeElements ( context ) {
+    context = context || _doc;
+    return getElements('[src]'+('audio embed iframe img input script source track video x-script [processed] [skip-on-hash]'.split(' ').map(function(tag){ return ':not('+tag+')'; }).join('')), context);
+  }
+
   function processIncludes (context) {
-    context = context || document;
-    getElements('[src]'+('audio embed iframe img input script source track video x-script [processed]'.split(' ').map(tag=>':not('+tag+')').join('')), context)
-      .forEach((el)=>{
+    context = context || _doc;
+    getAltIframeElements(context).forEach(el=>{
         el.setAttribute('processed', '');
         loadExternalSrc(el);
       });
@@ -153,6 +220,8 @@
   }
 
   function onDocReady () {
+    _pending = 0;
+    _urlHash = _loc.hash || '';
     _htmlDir = (_doc.body.getAttribute('components-loc') || '').replace(/\/+$/g,'').trim();
     _htmlExt = (_doc.body.getAttribute('components-ext') || '').trim();
     processIncludes();

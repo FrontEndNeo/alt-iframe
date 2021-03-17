@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" href="data:image/x-icon;base64,">
   <title>alt-iframe</title>
 
   <!-- bootstrap styles -->
@@ -29,7 +30,7 @@
   <header src="html-files/header.html"></header>
 
   <!-- use [id] attribute to load partial html on click of en element (refer header.html: <a> and <button> tags) -->
-  <main src="html-files/home.html" id="containerMain"></main>
+  <main src="html-files/home.html" id="containerMain" skip-on-hash></main> <!-- [skip-on-hash] attribute will skip initial [src] if the page is loaded with a hash in the url -->
 
   <!-- use [replace] attribute to replace the tag with partial html content -->
   <div src="html-files/footer.html" replace></div>
