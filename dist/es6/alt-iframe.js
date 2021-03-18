@@ -12,15 +12,20 @@
 */
 (function(_g){
 
-  let _doc = document, _loc = _doc.location, _htmlDir, _htmlExt, _urlHash, _prvHash, _curHash, _pending;
+  let _doc = document, _loc = _doc.location, _htmlDir, _htmlExt, _pending;
+  let _urlHash, _prvHash, _curHash, _hashLst, hashPathDelimiter = '/', hashNavPath = '';
+  let _urlHashOn = ((_doc.body.getAttribute('url-hash') || '').toLowerCase() != 'off');
 
-  window.onhashchange = function() {
-    _curHash = _loc.hash || '';
-    if (!_curHash) {
-      _loc.reload();
-    } else if (_curHash != _prvHash) {
-      _urlHash = _curHash;
-      loadUrlHash();
+  if (_urlHashOn) {
+    window.onhashchange = function() {
+      _curHash = _loc.hash || '';
+      if (!_curHash) {
+        (_loc.href.indexOf('#') < 0) && _loc.reload();
+        _prvHash = '#';
+      } else if (_curHash != _prvHash) {
+        _urlHash = _curHash;
+        loadUrlHash();
+      }
     }
   }
 
@@ -77,15 +82,33 @@
     _loc.href = redirectUrl;
   }
 
-  function loadUrlHash () {
-    if (_urlHash) {
-      let elHash = getElements('[x-href="'+_urlHash+'"][x-target^="#"]');
+  function loadUrlHash ( forHash, hashPath ) {
+    if (!_urlHashOn) return;
+
+    forHash = forHash || _urlHash;
+    if (forHash) {
+      let elHash = getElements('[url-hash="'+forHash+'"][x-target^="#"]');
       if (elHash.length) {
-        _urlHash = '';
+        if (hashPath) {
+          elHash[0].setAttribute('skip-hash-update', '1');
+        } else {
+          _urlHash = '';
+        }
         _prvHash = _curHash;
         elHash[0].click();
-      } else {
-        (!(_pending || getAltIframeElements().length)) && handleHashNotFound();
+      } else if (!_pending) {
+        if (_urlHash.indexOf(hashPathDelimiter) > 0) {
+          let hashNavLength = ((hashNavPath && hashNavPath.split(hashPathDelimiter)) || []).length;
+          let nxtHash = _hashLst[hashNavLength];
+          if (nxtHash || (hashNavLength <= _hashLst.length)) {
+            hashNavPath +=  (hashNavPath? hashPathDelimiter : '') + nxtHash;
+            loadUrlHash(hashNavPath, _urlHash);
+          } else {
+            handleHashNotFound();
+          }
+        } else if (!getAltIframeElements().length) {
+          handleHashNotFound();
+        }
       }
     } else {
       let hashLockEls = getElements('[skip-on-hash]');
@@ -164,13 +187,18 @@
     }
   }
 
-  function updateHistory ( newHash ) {
-    if (_prvHash != newHash) {
-      _prvHash = newHash;
-      try {
-        history.pushState(null, newHash, newHash);
-      } catch (e) {}
+  function updateHistory ( clickedEl ) {
+    if (!_urlHashOn) return;
+    if (!clickedEl.getAttribute('skip-hash-update')) {
+      let newHash = clickedEl.getAttribute('url-hash');
+      if ((newHash != '#') && (_prvHash != newHash)) {
+        _prvHash = newHash;
+        try {
+          history.pushState(null, newHash, newHash);
+        } catch (e) {}
+      }
     }
+    clickedEl.removeAttribute('skip-hash-update');
   }
 
   function onNavElClick () {
@@ -187,13 +215,11 @@
         targetEl.removeAttribute('await', '');
       }
 
-      let xHref = clickedEl.getAttribute('x-href').substring(1);
-      if (/^[#! ]/.test(xHref)) {
-        xHref = xHref.substring(1).trim();
-      } else {
-        updateHistory( '#'+xHref );
-      }
-      loadExternalSrc(targetEl, xHref);
+      updateHistory( clickedEl );
+
+      let xSrc = clickedEl.getAttribute('x-href').substring(1);
+      (/^[! ]/.test(xSrc)) && (xSrc = xSrc.substring(1).trim());
+      loadExternalSrc(targetEl, xSrc);
     } else {
       console.warn('Target element not found. Invalid target specified in element', clickedEl);
     }
@@ -215,6 +241,13 @@
       renameAttr(el, 'target', 'x-target');
       renameAttr(el, 'href', 'x-href');
       el.setAttribute('href', 'javascript:;');
+
+      let eHash = el.getAttribute('url-hash') || el.getAttribute('x-href');
+      (!/^#/.test(eHash)) && (eHash = '#'+eHash);
+      (/^#[! ]+/.test(eHash)) && (eHash = '#');
+      eHash = eHash.replace(/[+ ]/g,'').replace(new RegExp('\\'+hashPathDelimiter+'+$'), '');
+      el.setAttribute('url-hash', eHash);
+
       el.addEventListener('click', onNavElClick);
     });
   }
@@ -222,6 +255,7 @@
   function onDocReady () {
     _pending = 0;
     _urlHash = _loc.hash || '';
+    _hashLst = (_urlHashOn && _urlHash && _urlHash.split(hashPathDelimiter)) || [];
     _htmlDir = (_doc.body.getAttribute('components-loc') || '').replace(/\/+$/g,'').trim();
     _htmlExt = (_doc.body.getAttribute('components-ext') || '').trim();
     processIncludes();
