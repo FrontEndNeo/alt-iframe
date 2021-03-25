@@ -3,7 +3,7 @@
  * - A simple native JavaScript (ES5) utility library to include partial HTML(s).
  * - You don't need a framework or jQuery!!!
  *
- * version: 1.3.1
+ * version: 1.4.0
  *
  * License: MIT
  *
@@ -95,7 +95,7 @@
           _urlHash = '';
         }
         _prvHash = _curHash;
-        elHash[0].click();
+        onNavElClick.call(elHash[0]);
       } else if (!_pending) {
         if (_urlHash.indexOf(hashPathDelimiter) > 0) {
           var hashNavLength = ((hashNavPath && hashNavPath.split(hashPathDelimiter)) || []).length;
@@ -208,6 +208,27 @@
 
   function onNavElClick () {
     var clickedEl = this;
+
+    if (clickedEl.tagName == 'FORM' && (!clickedEl.checkValidity())) {
+      clickedEl.reportValidity();
+      return false;
+    }
+
+    var ifCheck = clickedEl.getAttribute('if');
+    if (ifCheck) {
+      var idxOfBrace = ifCheck.indexOf('(');
+      var ifFnName = (idxOfBrace>0? ifCheck.substring(0, idxOfBrace) : ifCheck).replace(/\s/g,'');
+      if (ifFnName) {
+        var isOk;
+        try {
+          isOk = (window[ifFnName].call(clickedEl));
+        } catch(e) {
+          console.error('Function NOT Found:', ifFnName);
+        }
+        if (!isOk) return false;
+      }
+    }
+
     var targetEl = _doc.querySelector( clickedEl.getAttribute('x-target') );
 
     if (targetEl) {
@@ -253,7 +274,15 @@
       eHash = eHash.replace(/[+ ]/g,'').replace(new RegExp('\\'+hashPathDelimiter+'+$'), '');
       el.setAttribute('url-hash', eHash);
 
-      el.addEventListener('click', onNavElClick);
+      var defEvent = (el.tagName == 'FORM')? 'submit' : 'click';
+      var onEvent = (el.getAttribute('on') || defEvent).replace(/[^a-z]/gi,'_');
+      onEvent.split('_').forEach(function (eName) {
+        eName = eName.trim().toLowerCase();
+        if (eName.length>2) {
+          eName = eName.replace(/^on/,'');
+          el.addEventListener(eName, onNavElClick);
+        }
+      });
     });
   }
 
