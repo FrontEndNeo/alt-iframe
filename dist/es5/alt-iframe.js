@@ -3,7 +3,7 @@
  * - A simple native JavaScript (ES5) utility library to include partial HTML(s).
  * - You don't need a framework or jQuery!!!
  *
- * version: 1.3.0
+ * version: 1.3.1
  *
  * License: MIT
  *
@@ -72,12 +72,12 @@
     var hashErrMode = (_doc.body.getAttribute('hash-error') || '').toLowerCase();
     var redirectUrl = _loc.origin + _loc.pathname + _loc.search;
     var eMsg;
-    if (hashErrMode == 'alert') {
-      eMsg = 'Page route[' + (_urlHash.substring(1)) + '] not found! Redirecting to this page root.';
-      alert(eMsg);
-    } else if (hashErrMode == 'url') {
+    if (hashErrMode == 'url') {
       eMsg = 'Page_route[' + (_urlHash.substring(1)) + ']_not_found!_Redirected_to_this_page_root.';
       redirectUrl = _loc.origin + _loc.pathname + '?_error=' + eMsg + (_loc.search.replace(/^\?/,'&'));
+    } else {
+      eMsg = 'Page route[#' + (_urlHash.substring(1)) + '] not found! Redirecting to this page root.';
+      alert(eMsg);
     }
     _loc.href = redirectUrl;
   }
@@ -106,8 +106,14 @@
           } else {
             handleHashNotFound();
           }
-        } else if (!getAltIframeElements().length) {
-          handleHashNotFound();
+        } else if (!(getAltIframeElements().length)) {
+          var localHashEl = _doc.querySelector(_urlHash);
+          if (localHashEl) {
+            localHashEl.scrollIntoView(true);
+            _urlHash = '';
+          } else {
+            handleHashNotFound();
+          }
         }
       }
     } else {
