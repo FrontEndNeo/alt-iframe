@@ -82,6 +82,7 @@
     _loc.href = redirectUrl;
   }
 
+  let delayHashCheck;
   function loadUrlHash ( forHash, hashPath ) {
     if (!_urlHashOn) return;
 
@@ -91,7 +92,8 @@
       if (elHash.length) {
         if (hashPath) {
           elHash[0].setAttribute('skip-hash-update', '1');
-        } else {
+        }
+        if (!hashPath || (delayHashCheck && hashPath == _urlHash)) {
           _urlHash = '';
         }
         _prvHash = _curHash;
@@ -100,9 +102,12 @@
         if (_urlHash.indexOf(hashPathDelimiter) > 0) {
           let hashNavLength = ((hashNavPath && hashNavPath.split(hashPathDelimiter)) || []).length;
           let nxtHash = _hashLst[hashNavLength];
-          if (nxtHash || (hashNavLength < _hashLst.length)) {
+          if (nxtHash || (hashNavLength <= _hashLst.length)) {
             hashNavPath +=  (hashNavPath? hashPathDelimiter : '') + nxtHash;
-            loadUrlHash(hashNavPath, _urlHash);
+            delayHashCheck = (getElements('[url-hash="'+hashNavPath+'"][x-target^="#"]').length)? 0 : 250;
+            setTimeout(()=>{
+              loadUrlHash(hashNavPath, _urlHash);
+            }, delayHashCheck);
           } else {
             handleHashNotFound();
           }
