@@ -3,7 +3,7 @@
  * - A simple native JavaScript (ES6+) utility library to include partial HTML(s).
  * - You don't need a framework or jQuery!!!
  *
- * version: 1.4.1
+ * version: 1.4.2
  *
  * License: MIT
  *
@@ -100,7 +100,7 @@
         if (_urlHash.indexOf(hashPathDelimiter) > 0) {
           let hashNavLength = ((hashNavPath && hashNavPath.split(hashPathDelimiter)) || []).length;
           let nxtHash = _hashLst[hashNavLength];
-          if (nxtHash || (hashNavLength <= _hashLst.length)) {
+          if (nxtHash || (hashNavLength < _hashLst.length)) {
             hashNavPath +=  (hashNavPath? hashPathDelimiter : '') + nxtHash;
             loadUrlHash(hashNavPath, _urlHash);
           } else {
@@ -296,6 +296,11 @@
     _htmlDir = (_doc.body.getAttribute('components-loc') || '').replace(/\/+$/g,'').trim();
     _htmlExt = (_doc.body.getAttribute('components-ext') || '').trim();
     processIncludes();
+    setTimeout(function () {
+      _doc.addEventListener('DOMSubtreeModified', function () {
+        (event && event.target) && processIncludes( event.target );
+      });
+    });
   }
 
   if ( (_doc.readyState == 'complete') || (!(_doc.readyState == 'loading' || _doc.documentElement.doScroll)) ) {
