@@ -3,7 +3,7 @@
  * - A simple native JavaScript (ES5) utility library to include partial HTML(s).
  * - You don't need a framework or jQuery!!!
  *
- * version: 1.4.2
+ * version: 1.4.3
  *
  * License: MIT
  *
@@ -15,6 +15,7 @@
   var _doc = document, _loc = _doc.location, _htmlDir, _htmlExt, _pending;
   var _urlHash, _prvHash, _curHash, _hashLst, hashPathDelimiter = '/', hashNavPath = '';
   var _urlHashOn = ((_doc.body.getAttribute('url-hash') || '').toLowerCase() != 'off');
+  var delayHashCheck;
 
   if (_urlHashOn) {
     window.onhashchange = function() {
@@ -82,7 +83,6 @@
     _loc.href = redirectUrl;
   }
 
-  var delayHashCheck;
   function loadUrlHash ( forHash, hashPath ) {
     if (!_urlHashOn) return;
 
