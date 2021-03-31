@@ -3,7 +3,7 @@
  * - A simple native JavaScript (ES5) utility library to include partial HTML(s).
  * - You don't need a framework or jQuery!!!
  *
- * version: 1.4.3
+ * version: 1.4.4
  *
  * License: MIT
  *
@@ -301,9 +301,10 @@
     _htmlExt = (_doc.body.getAttribute('components-ext') || '').trim();
     processIncludes();
     setTimeout(function () {
-      _doc.addEventListener('DOMSubtreeModified', function () {
-        (event && event.target) && processIncludes( event.target );
-      });
+      (new MutationObserver(function(mutationsList) {
+        (mutationsList && mutationsList[0] && mutationsList[0].type === 'childList'
+          && mutationsList[0].target && processIncludes( mutationsList[0].target ));
+      })).observe(_doc, { childList: true, subtree: true });
     });
   }
 
