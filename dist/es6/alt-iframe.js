@@ -3,7 +3,7 @@
  * - A simple native JavaScript (ES6+) utility library to include partial HTML(s).
  * - You don't need a framework or jQuery!!!
  *
- * version: 1.4.4
+ * version: 1.4.5
  *
  * License: MIT
  *
@@ -42,7 +42,7 @@
 
   function cloneScriptNodeFrom (xScript) {
     let script  = _doc.createElement('script');
-    script.text = xScript.innerHTML;
+    script.text = xScript.innerHTML.replace(/&gt;/gi,'>').replace(/&lt;/gi,'<').replace(/&amp;/gi,'&').replace(/&quot;/gi,'"').replace(/&apos;/gi,"'");
     for( let i = xScript.attributes.length-1; i >= 0; i-- ) {
       script.setAttribute( xScript.attributes[i].name, xScript.attributes[i].value );
     }
