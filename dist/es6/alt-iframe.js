@@ -3,7 +3,7 @@
  * - A simple native JavaScript (ES6+) utility library to include partial HTML(s).
  * - You don't need a framework or jQuery!!!
  *
- * version: 1.4.5
+ * version: 1.4.6
  *
  * License: MIT
  *
@@ -148,8 +148,7 @@
       }
     } else {
       content = (content || '')
-                .replace(/<(\/)*script/gi, '<$1x-script')
-                .replace(/<template /gi, '<script type="text/template" ').replace(/<\/template\s*>/gi, '</script>');
+                .replace(/<(\/)*script/gi, '<$1x-script');
       if ((targetEl.tagName.indexOf('REPLACE')>=0) || targetEl.hasAttribute('replace')) {
         let targetParent = targetEl.parentNode;
         let awaitScripts = targetEl.hasAttribute('await');
