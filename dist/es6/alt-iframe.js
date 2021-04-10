@@ -3,7 +3,7 @@
  * - A simple native JavaScript (ES6+) utility library to include partial HTML(s).
  * - You don't need a framework or jQuery!!!
  *
- * version: 1.4.6
+ * version: 1.5.0-ES6
  *
  * License: MIT
  *
@@ -270,6 +270,10 @@
         loadExternalSrc(el);
       });
 
+    getElements('form:not([onsubmit]):not([href])', context).forEach(formEl=>{
+      (!formEl.getAttribute('action') && formEl.setAttribute('onsubmit', 'return false;'));
+    });
+
     getElements('[href^="#"][target^="#"]', context).forEach(el=>{
       renameAttr(el, 'target', 'x-target');
       renameAttr(el, 'href', 'x-href');
@@ -281,8 +285,10 @@
       eHash = eHash.replace(/[+ ]/g,'').replace(new RegExp('\\'+hashPathDelimiter+'+$'), '');
       el.setAttribute('url-hash', eHash);
 
-      let defEvent = (el.tagName == 'FORM')? 'submit' : 'click';
+      let isFormEl = (el.tagName == 'FORM');
+      let defEvent = isFormEl? 'submit' : 'click';
       let onEvent = (el.getAttribute('on') || defEvent).replace(/[^a-z]/gi,'_');
+      (isFormEl && !el.getAttribute('onsubmit') && el.setAttribute('onsubmit', 'return false;'));
       onEvent.split('_').forEach(eName=>{
         eName = eName.trim().toLowerCase();
         if (eName.length>2) {
