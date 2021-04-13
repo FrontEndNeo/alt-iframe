@@ -1,0 +1,45 @@
+<h2>Edit Profile</h2>
+<div class="card" style="width: 18rem;">
+  <img id="usrAvatar" src="" class="card-img-top" alt="..." width="286" height="286">
+  <div class="card-body">
+    <form>
+      <div>
+        <label for="usrFirstName">First Name</label><br>
+        <input id="usrFirstName" type="text" value="">
+      </div>
+      <div>
+        <label for="usrLastName">Last Name</label><br>
+        <input id="usrLastName" type="text" value="">
+      </div>
+      <div>
+        <label for="usrEmail">Email</label><br>
+        <input id="usrEmail" type="email" value="">
+      </div>
+      <hr>
+      <button class="btn btn-primary">Save</button>
+    </form>
+  </div>
+</div>
+
+<script>
+
+  // IIFE
+  (function () {
+
+    setMenu( '#menuNone' );
+
+    var profData = contactsList[editProfileIndex]; // global variable set in contacts.html
+    // console.log('🚀 ~ profData', profData);
+
+    $('#usrAvatar').attr({
+      src: profData.avatar,
+      alt: profData.first_name
+    });
+
+    $('#usrFirstName').val(profData.first_name);
+    $('#usrLastName').val(profData.last_name);
+    $('#usrEmail').val(profData.email);
+
+  })();
+
+</script>

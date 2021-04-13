@@ -1,0 +1,28 @@
+<nav class="navbar navbar-expand-md navbar-light bg-light">
+  <a class="navbar-brand" href="#home" target="#container-main">Demo App</a>
+  <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+    <span class="navbar-toggler-icon"></span>
+  </button>
+
+  <div class="collapse navbar-collapse" id="navbarSupportedContent">
+    <ul class="navbar-nav mr-auto">
+      <li id="menuNone" class="nav-item"></li>
+      <li id="menuHome" class="nav-item">
+        <a class="nav-link" href="#home" target="#container-main">Home <span class="sr-only">(current)</span></a>
+      </li>
+      <li id="menuMyProfile" class="nav-item">
+        <a class="nav-link" href="#myProfile" target="#container-main">My Profile</a>
+      </li>
+      <li id="menuContacts" class="nav-item">
+        <a class="nav-link" href="#contacts" target="#container-main">Contacts</a>
+      </li>
+      <li id="menuTemplates" class="nav-item">
+        <a class="nav-link" href="#templates" target="#container-main">Templates</a>
+      </li>
+    </ul>
+    <form href="#search" target="#container-main" on="submit, change" class="form-inline my-2 my-lg-0">
+      <input id="pid" class="form-control mr-sm-2" type="number" min="2" max="12" required placeholder="PID" aria-label="Search">
+      <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Search</button>
+    </form>
+  </div>
+</nav>

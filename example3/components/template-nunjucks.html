@@ -1,0 +1,25 @@
+<h3><a href="https://mozilla.github.io/nunjucks/" target="_blank" rel="noopener noreferrer">Nunjucks (mozilla)</a></h3>
+<div class="row">
+  <div class="col-4 text-center">
+    <span>Template</span><br>
+    <textarea type="live:nunjucks" cols="45" rows="10">
+{{ foo.bar }}
+{{ foo["version"] }}
+    </textarea>
+  </div>
+  <div class="col-4 text-center">
+    <span>Data (JSON)</span><br>
+    <textarea cols="45" rows="10">
+{
+  "foo": {
+    "bar" : "nunjucks",
+    "version": "3.2.3"
+  }
+}
+    </textarea>
+  </div>
+  <div class="col-4 text-center" style="border: 1px solid #eee;">
+    <a href="javascript:void 0" class="btn-preview">Preview</a><br>
+    <textarea class="preview" cols="45" rows="10"></textarea>
+  </div>
+</div>

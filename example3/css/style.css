@@ -1,0 +1,15 @@
+.fixed-bottom {
+  height: 50px;
+  padding: 10px;
+  color: #aaa;
+  background-color: #eee;
+  text-align: right;
+  position: fixed;
+  left:0;
+  bottom:0;
+  width: 100%;
+}
+
+.nav-item.active {
+  border-top: 2px solid orange;
+}

@@ -3,7 +3,7 @@
  * - A simple native JavaScript (ES6+) utility library to include partial HTML(s).
  * - You don't need a framework or jQuery!!!
  *
- * version: 1.5.0-ES6
+ * version: 1.6.0-ES6
  *
  * License: MIT
  *
@@ -16,6 +16,7 @@
   let _urlHash, _prvHash, _curHash, _hashLst, hashPathDelimiter = '/', hashNavPath = '';
   let _urlHashOn = ((_doc.body.getAttribute('url-hash') || '').toLowerCase() != 'off');
   let delayHashCheck;
+  let _onReadyQ = [], nxtFn, fnRes;
 
   if (_urlHashOn) {
     window.onhashchange = function() {
@@ -88,7 +89,7 @@
 
     forHash = forHash || _urlHash;
     if (forHash) {
-      let elHash = getElements('[url-hash="'+forHash+'"][x-target^="#"]');
+      let elHash = getElements('[url-hash="'+forHash+'"][x-target^="#"],[href="'+forHash+'"]');
       if (elHash.length) {
         if (hashPath) {
           elHash[0].setAttribute('skip-hash-update', '1');
@@ -97,7 +98,7 @@
           _urlHash = '';
         }
         _prvHash = _curHash;
-        onNavElClick.call(elHash[0]);
+        onNavElClick.call(elHash[0], true, hashPath);
       } else if (!_pending) {
         if (_urlHash.indexOf(hashPathDelimiter) > 0) {
           let hashNavLength = ((hashNavPath && hashNavPath.split(hashPathDelimiter)) || []).length;
@@ -166,10 +167,13 @@
 
   function getSrcPath ( srcPath ) {
     let finalPath = (srcPath || '').trim();
-    let appendScript = /\+$/.test(finalPath)? '+':'';
-    if (appendScript) finalPath = finalPath.substring(0, finalPath.length-1);
-    _htmlDir && (finalPath = /^[^a-z0-9_]/gi.test(finalPath[0])? finalPath.substring(1) : (_htmlDir+'/'+finalPath))
-    _htmlExt && (finalPath = (finalPath[finalPath.length-1] == '/')? finalPath.substring(0, finalPath.length-1) : (finalPath+_htmlExt));
+    let appendScript='';
+    if (!/^(\/\/|http:\/\/|https:\/\/)/i.test(finalPath)) {
+      appendScript = /\+$/.test(finalPath)? '+':'';
+      if (appendScript) finalPath = finalPath.substring(0, finalPath.length-1);
+      _htmlDir && (finalPath = /^[^a-z0-9_]/gi.test(finalPath[0])? finalPath.substring(1) : (_htmlDir+'/'+finalPath))
+      _htmlExt && (finalPath = (finalPath[finalPath.length-1] == '/')? finalPath.substring(0, finalPath.length-1) : (finalPath+_htmlExt));
+    }
     return finalPath+appendScript;
   }
 
@@ -213,8 +217,14 @@
     clickedEl.removeAttribute('skip-hash-update');
   }
 
-  function onNavElClick () {
+  function onNavElClick ( onHashNav, onHashPath ) {
+
     let clickedEl = this;
+
+    if (onHashNav && onHashPath && clickedEl.tagName !== 'FORM') {
+      clickedEl.click();
+      return;
+    }
 
     if (clickedEl.tagName == 'FORM' && (!clickedEl.checkValidity())) {
       clickedEl.reportValidity();
@@ -265,7 +275,8 @@
 
   function processIncludes (context) {
     context = context || _doc;
-    getAltIframeElements(context).forEach(el=>{
+    let childAltFrameElements = getAltIframeElements(context);
+    childAltFrameElements.forEach(el=>{
         el.setAttribute('processed', '');
         loadExternalSrc(el);
       });
@@ -297,6 +308,45 @@
         }
       });
     });
+
+    (!childAltFrameElements.length && processOnReady());
+  }
+
+  function getData(dataUrl, callbackFn) {
+    return fetch(dataUrl)
+            .then( res => {
+              let xhrStatus = res.status;
+              return (res.ok && ((xhrStatus >= 200 && xhrStatus < 300) || (xhrStatus == 304)))?
+                      res.json() : {error: 'Failed: [GET]'+dataUrl, status: xhrStatus};
+            } )
+            .then( resData => callbackFn(resData) )
+            .catch( e => { return callbackFn({error: 'Failed: [GET]'+dataUrl, e: e}); } );
+  }
+
+  function load (xSrc, target, onLoad) {
+    let elTarget = getElements(target)[0];
+    if (elTarget) {
+      (typeof onLoad === 'function' && _onReadyQ.push(onLoad));
+      loadExternalSrc(elTarget, xSrc);
+    } else {
+      console.error('Target container not found.', target);
+    }
+  }
+
+  function onReady ( fnX ) {
+    if (typeof fnX === 'function') {
+      _onReadyQ.push(fnX);
+      processOnReady();
+    }
+  }
+
+  function processOnReady () {
+    if (!_pending && !getAltIframeElements().length && _onReadyQ.length && (typeof fnRes === 'undefined' || fnRes)) {
+      nxtFn = _onReadyQ.shift();
+      fnRes = nxtFn(fnRes);
+      ((typeof fnRes !== 'undefined' && !fnRes && (_onReadyQ = [])));
+      processOnReady();
+    }
   }
 
   function onDocReady () {
@@ -319,5 +369,7 @@
   } else {
     _doc.addEventListener('DOMContentLoaded', onDocReady);
   }
+
+  _g.alt = _g.aif = { load, onReady, getData };
 
 })(this);

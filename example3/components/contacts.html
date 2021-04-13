@@ -1,0 +1,71 @@
+<h2>Contacts</h2>
+<table class="table">
+  <thead>
+    <tr>
+      <th scope="col">Avatar</th>
+      <th scope="col">First, Last Name</th>
+      <th scope="col">email</th>
+      <th scope="col">Action</th>
+    </tr>
+  </thead>
+  <tbody id="contactsList">
+  </tbody>
+</table>
+
+<template id="templateList" type="Handlebars">
+  {{#each data as |contact index| }}
+  <tr>
+    <th scope="row">
+      <img  src="{{avatar}}" alt="{{first_name}} {{last_name}}"
+            style="width:50px !important;height:50px !important;">
+    </th>
+    <td>{{first_name}}, {{last_name}}</td>
+    <td>{{email}}</td>
+    <td>
+      <a  url-hash="#contacts/edit-profile-{{index}}"
+          href="#profileEdit" target="#container-main"
+          onclick="editProfile('{{ index }}')">view/Edit</a>
+    </td>
+  </tr>
+  {{/each}}
+</template>
+<!-- --------------------------------------------------------- -->
+
+<script>
+
+  // global variables to access across components
+  var contactsList;
+  var editProfileIndex;
+
+  // IIFE
+  (function () {
+
+    setMenu( '#menuContacts' );
+
+    // $.ajax('https://reqres.in/api/users').done( onApiRes ); //using jQuery.ajax
+
+    alt.getData('https://reqres.in/api/users', onApiRes); // using built-in alt.getData
+
+  })();
+
+  // Other Functions
+
+  function onApiRes ( apiRes ) {
+
+    // console.log('🚀 ~ apiRes', apiRes);
+
+    contactsList = apiRes.data; // store in global variable, accessed in profileEdit.html
+
+    var hbContactsBind = Handlebars.compile( $('#templateList').html() );
+    $('#contactsList').html( hbContactsBind(apiRes) );
+
+  }
+
+  function editProfile ( pIndex ) {
+    // console.log('🚀 ~ pIndex', pIndex);
+
+    editProfileIndex = pIndex; // store in global variable, accessed in profileEdit.html
+
+  }
+
+</script>

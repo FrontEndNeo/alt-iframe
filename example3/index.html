@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <link rel="icon" href="data:image/x-icon;base64,">
+  <title>SPA - Ajax</title>
+
+  <!-- Bootstrap CSS -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@latest/dist/css/bootstrap.min.css">
+
+  <!-- custom CSS -->
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body components-loc="components" components-ext=".html">
+
+  <!-- components/appRoot.html -->
+  <component src="appRoot" replace></component>
+
+  <!-- Bootstrap JS Bundle + jQuery(Full) with ajax -->
+  <script src="https://cdn.jsdelivr.net/npm/jquery@latest/dist/jquery.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@latest/dist/js/bootstrap.bundle.min.js"></script>
+
+  <!-- Javascript Template Engines -->
+  <script src="https://cdn.jsdelivr.net/npm/handlebars@latest/dist/handlebars.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mustache@4.2.0/mustache.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/lodash@4.17.21/lodash.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/dustjs-linkedin@2.7.5/dist/dust-full.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/ejs@3.1.6/ejs.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/template7@1.4.2/dist/template7.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/nunjucks@3.2.3/browser/nunjucks.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/gh/sucom/SPA.js@latest/dist/spa-nxt.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/dot@1.1.3/doT.min.js"></script>
+  <script>
+    doT.templateSettings.strip = false;
+  </script>
+
+  <!-- alt-iframe -->
+  <script src="https://cdn.jsdelivr.net/gh/FrontEndNeo/alt-iframe@1.6.0/dist/es6/alt-iframe.min.js"></script>
+
+  <!-- custom common functions  -->
+  <script src="js/common.js"></script>
+
+</body>
+</html>
