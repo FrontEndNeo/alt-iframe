@@ -1,14 +1,20 @@
 function getProfile(pid) {
+
   $.ajax('https://reqres.in/api/users/' + pid)
     .done(function (apiData) {
       // console.log('🚀 ~ apiData', apiData);
+
       var profData = apiData.data;
       // console.log('🚀 ~ profData', profData);
+
       showProfile(profData);
     });
+
 }
 
+// bind without template
 function showProfile(profData) {
+
   var fullName = profData.first_name + ' ' + profData.last_name;
 
   $('#profImg').attr({
@@ -21,10 +27,12 @@ function showProfile(profData) {
 
 }
 
+// Highlight nav menu item
 function setMenu(menuLink) {
   $(menuLink).addClass('active').siblings().removeClass('active');
 }
 
+// Template Preview links click event listener
 $(document).on('click', '.btn-preview', function (e) {
   var btnPreview    = e.target;
   var $section      = $(btnPreview).closest('section');

@@ -3,7 +3,7 @@
  * - A simple native JavaScript (ES6+) utility library to include partial HTML(s).
  * - You don't need a framework or jQuery!!!
  *
- * version: 1.6.0-ES6
+ * version: 1.6.1-ES6
  *
  * License: MIT
  *
@@ -51,7 +51,8 @@
   }
 
   function processScripts (context, awaitScripts) {
-    getElements('x-script:not([processed])', context).forEach(xScript=>{
+    // getElements('x-script:not([processed])', context).forEach(xScript=>{
+    getElements('script:not([processed])', context).forEach(xScript=>{
       xScript.setAttribute('processed','');
       if (awaitScripts) { xScript.setAttribute('await',''); }
       let nScript = cloneScriptNodeFrom(xScript);
@@ -148,8 +149,8 @@
         _doc.head.appendChild( xScript ).parentNode.removeChild( xScript );
       }
     } else {
-      content = (content || '')
-                .replace(/<(\/)*script/gi, '<$1x-script');
+      content = (content || '');
+                // .replace(/<(\/)*script/gi, '<$1x-script');
       if ((targetEl.tagName.indexOf('REPLACE')>=0) || targetEl.hasAttribute('replace')) {
         let targetParent = targetEl.parentNode;
         let awaitScripts = targetEl.hasAttribute('await');
@@ -270,7 +271,7 @@
 
   function getAltIframeElements ( context ) {
     context = context || _doc;
-    return getElements('[src]'+('audio embed iframe img input script source track video x-script [processed] [skip-on-hash]'.split(' ').map(function(tag){ return ':not('+tag+')'; }).join('')), context);
+    return getElements('[src]'+('audio embed iframe img input script source track video [processed] [skip-on-hash]'.split(' ').map(function(tag){ return ':not('+tag+')'; }).join('')), context);
   }
 
   function processIncludes (context) {
