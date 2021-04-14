@@ -1,15 +1,15 @@
 <h3><a href="https://github.com/janl/mustache.js/" target="_blank" rel="noopener noreferrer">Mustache</a></h3>
-    <div class="row">
-      <div class="col-4 text-center">
-        <span>Template</span><br>
-        <textarea type="live:Mustache" cols="45" rows="10">
+<div class="row">
+  <div class="col-4 text-center">
+    <span>Template</span><br>
+    <textarea type="live:Mustache" cols="45" rows="10">
 * {{name.first}} {{name.last}}
 * {{age}}
-        </textarea>
-      </div>
-      <div class="col-4 text-center">
-        <span>Data (JSON)</span><br>
-        <textarea cols="45" rows="10">
+    </textarea>
+  </div>
+  <div class="col-4 text-center">
+    <span>Data (JSON)</span><br>
+    <textarea cols="45" rows="10">
 {
   "name": {
     "first": "Michael",
@@ -17,10 +17,13 @@
   },
   "age": "RIP"
 }
-        </textarea>
-      </div>
-      <div class="col-4 text-center" style="border: 1px solid #eee;">
-        <a href="javascript:void 0" class="btn-preview">Preview</a><br>
-        <textarea class="preview" cols="45" rows="10"></textarea>
-      </div>
-    </div>
+    </textarea>
+  </div>
+  <div class="col-4 text-center" style="border: 1px solid #eee;">
+    <a href="javascript:void 0" class="btn-preview">Preview</a>
+    &nbsp;&nbsp; <span title="Compile Time">cT: <span class="performance-time"></span>ms</span>
+    &nbsp;&nbsp; <span title="Render Time">rT: <span class="performance-time"></span>ms</span>
+    <br>
+    <textarea class="preview" cols="45" rows="10" readonly></textarea>
+  </div>
+</div>
