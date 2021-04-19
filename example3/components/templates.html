@@ -34,10 +34,25 @@
 <script>
   setMenu( '#menuTemplates' );
 
+  // alt.onReady(function () {
+  //   $('.templates-preview a.btn-preview').each(function (i, el) {
+  //     el.click();
+  //   });
+  // });
+
+  // alt.onReady(function () {
+  //   setTimeout(() => {
+  //     $('.templates-preview a.btn-preview').each(function (i, el) {
+  //       el.click();
+  //     });
+  //   }, 50);
+  // });
+
   alt.onReady(function () {
     $('.templates-preview a.btn-preview').each(function (i, el) {
       el.click();
     });
-  });
+  }, 50);
+
 
 </script>

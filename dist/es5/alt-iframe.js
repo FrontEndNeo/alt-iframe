@@ -3,7 +3,7 @@
  * - A simple native JavaScript (ES5) utility library to include partial HTML(s).
  * - You don't need a framework or jQuery!!!
  *
- * version: 1.6.1-ES5
+ * version: 1.7.0-ES5
  *
  * License: MIT
  *
@@ -16,7 +16,7 @@
   var _urlHash, _prvHash, _curHash, _hashLst, hashPathDelimiter = '/', hashNavPath = '';
   var _urlHashOn = ((_doc.body.getAttribute('url-hash') || '').toLowerCase() != 'off');
   var delayHashCheck;
-  var _onReadyQ = [], nxtFn, fnRes;
+  var _onReadyQ = [], nxtFn;
 
   if (_urlHashOn) {
     window.onhashchange = function() {
@@ -337,19 +337,21 @@
     }
   }
 
-  function onReady ( fnX ) {
+  function onReady ( fnX, delay ) {
     if (typeof fnX === 'function') {
-      _onReadyQ.push(fnX);
+      _onReadyQ.push({fn: fnX, delay: delay||0});
       processOnReady();
     }
   }
 
-  function processOnReady () {
+  function processOnReady ( fnRes ) {
     if (!_pending && !getAltIframeElements().length && _onReadyQ.length && (typeof fnRes === 'undefined' || fnRes)) {
       nxtFn = _onReadyQ.shift();
-      fnRes = nxtFn(fnRes);
-      ((typeof fnRes !== 'undefined' && !fnRes && (_onReadyQ = [])));
-      processOnReady();
+      setTimeout(function () {
+        var prevFnRes = nxtFn.fn(fnRes);
+        ((typeof prevFnRes !== 'undefined' && !prevFnRes && (_onReadyQ = [])));
+        processOnReady( prevFnRes );
+      }, nxtFn.delay);
     }
   }
 
