@@ -3,7 +3,7 @@
  * - A simple native JavaScript (ES6+) utility library to include partial HTML(s).
  * - You don't need a framework or jQuery!!!
  *
- * version: 1.7.0-ES6
+ * version: 1.8.0-ES6
  *
  * License: MIT
  *
@@ -43,23 +43,47 @@
 
   function cloneScriptNodeFrom (xScript) {
     let script  = _doc.createElement('script');
-    script.text = xScript.innerHTML.replace(/&gt;/gi,'>').replace(/&lt;/gi,'<').replace(/&amp;/gi,'&').replace(/&quot;/gi,'"').replace(/&apos;/gi,"'");
+    script.text = xScript.innerHTML;
     for( let i = xScript.attributes.length-1; i >= 0; i-- ) {
       script.setAttribute( xScript.attributes[i].name, xScript.attributes[i].value );
     }
     return script;
   }
 
+  function parseElSrcPath ( el, attr, pContainer ) {
+    let newSrc = oldSrc = (el.getAttribute(attr) || '').trim();
+    let cRoot, rxCompPath, pSrc, pPath;
+
+    ((arguments.length === 2) && (pContainer = el.closest('[x-src]')));
+
+    if (newSrc && pContainer && (!/^(\/\/|http:\/\/|https:\/\/)/i.test(newSrc))) {
+      cRoot  = _htmlDir.replace(/^\/+/,'');
+      rxCompPath = new RegExp('^((\.){0,2}\/)*'+(cRoot));
+      if (rxCompPath.test(newSrc)) {
+        newSrc = newSrc.replace(rxCompPath, _htmlDir);
+      } else if (newSrc[0] !== '/') {
+        pSrc   = (pContainer && pContainer.getAttribute('x-src')) || '';
+        pPath  = pSrc.substring(0, pSrc.lastIndexOf('/')+1) || (_htmlDir+'/');
+        newSrc = (pPath+newSrc).replace(/\/\.?\//,'/');
+      }
+    }
+
+    (newSrc !== oldSrc && console.log(newSrc, oldSrc));
+    (newSrc !== oldSrc && el.setAttribute(attr, newSrc));
+  }
+
   function processScripts (context, awaitScripts) {
-    // getElements('x-script:not([processed])', context).forEach(xScript=>{
     getElements('script:not([processed])', context).forEach(xScript=>{
       xScript.setAttribute('processed','');
       if (awaitScripts) { xScript.setAttribute('await',''); }
       let nScript = cloneScriptNodeFrom(xScript);
 
-      if (!nScript.hasAttribute('src')) {
-        xScript.parentNode.replaceChild( nScript, xScript );
-      } else {
+      if (nScript.hasAttribute('src')) {
+
+        parseElSrcPath(nScript, 'src', xScript.closest('[x-src]'));
+        let scriptSrc = nScript.getAttribute('src');
+        (!/\.js$/i.test(scriptSrc)) && nScript.setAttribute('src', scriptSrc+'.js');
+
         let isAsync = !nScript.hasAttribute('await');
         if (!awaitScripts && isAsync) {
           xScript.parentNode.replaceChild( nScript, xScript );
@@ -67,7 +91,20 @@
           renameAttr(xScript, 'src', 'x-src');
           loadExternalSrc(nScript);
         }
+      } else {
+        xScript.parentNode.replaceChild( nScript, xScript );
       }
+    });
+  }
+
+  function fixComponentElsSrcPath ( context ) {
+    getElements('link[rel="stylesheet"][href]:not([processed])', context).forEach(function (xEl) {
+      parseElSrcPath(xEl, 'href');
+      xEl.setAttribute('processed', '');
+    });
+    getElements('img[src]:not([processed])', context).forEach(function (xEl) {
+      parseElSrcPath(xEl, 'src');
+      xEl.setAttribute('processed', '');
     });
   }
 
@@ -149,32 +186,60 @@
         _doc.head.appendChild( xScript ).parentNode.removeChild( xScript );
       }
     } else {
+      let replaceTarget = (targetEl.hasAttribute('replace') || (targetEl.tagName.indexOf('REPLACE')>=0)),
+          context       = replaceTarget? targetEl.parentNode : targetEl,
+          targetAttr    = replaceTarget? 'outerHTML' : 'innerHTML',
+          awaitScripts  = targetEl.hasAttribute('await');
+
       content = (content || '');
-                // .replace(/<(\/)*script/gi, '<$1x-script');
-      if ((targetEl.tagName.indexOf('REPLACE')>=0) || targetEl.hasAttribute('replace')) {
-        let targetParent = targetEl.parentNode;
-        let awaitScripts = targetEl.hasAttribute('await');
-        targetEl.outerHTML = content;
-        processScripts( targetParent, awaitScripts );
-        processIncludes( targetParent );
-      } else {
-        targetEl.innerHTML = content;
-        processScripts( targetEl, targetEl.hasAttribute('await') );
-        processIncludes( targetEl );
-      }
+      targetEl[targetAttr] = content;
+      fixComponentElsSrcPath( context );
+      processScripts( context, awaitScripts );
+      processIncludes( context );
+
     }
     loadUrlHash();
   }
 
+  function setComponentsRootPath ( fromPath ) {
+    if (_htmlDir === '?' && fromPath.indexOf('/')>=0) {
+      let slashIdx1 = fromPath.indexOf('/');
+      let slashIdx2 = fromPath.indexOf('/', slashIdx1+1);
+      if ((fromPath[0] === '/' || fromPath[0] === '.') && (slashIdx2 > slashIdx1))  {
+        _htmlDir = fromPath.substring(0, slashIdx2);
+      } else {
+        _htmlDir = fromPath.substring(0, slashIdx1);
+      }
+      console.log('Components Root Folder:', _htmlDir);
+    }
+  }
   function getSrcPath ( srcPath ) {
     let finalPath = (srcPath || '').trim();
-    let appendScript='';
+    let cRoot, rxCompPath, appendScript='';
+
     if (!/^(\/\/|http:\/\/|https:\/\/)/i.test(finalPath)) {
       appendScript = /\+$/.test(finalPath)? '+':'';
       if (appendScript) finalPath = finalPath.substring(0, finalPath.length-1);
-      _htmlDir && (finalPath = /^[^a-z0-9_]/gi.test(finalPath[0])? finalPath.substring(1) : (_htmlDir+'/'+finalPath))
-      _htmlExt && (finalPath = (finalPath[finalPath.length-1] == '/')? finalPath.substring(0, finalPath.length-1) : (finalPath+_htmlExt));
+
+      setComponentsRootPath(finalPath);
+
+      if (_htmlDir) {
+        if (/^[^a-z0-9_\.\/]/gi.test(finalPath[0])) {
+          finalPath = finalPath.substring(1);
+        } else {
+          cRoot  = _htmlDir.replace(/^\/+/,'');
+          rxCompPath = new RegExp('^((\.){0,2}\/)*'+(cRoot));
+          if (rxCompPath.test(finalPath)) {
+            finalPath = finalPath.replace(rxCompPath, _htmlDir);
+          } else {
+            finalPath = (_htmlDir+'/'+finalPath).replace(/\/\.?\//,'/');
+          }
+        }
+      }
+
+      _htmlExt && (!((new RegExp(_htmlExt+'$')).test(finalPath))) && (finalPath = (finalPath[finalPath.length-1] == '/')? finalPath.substring(0, finalPath.length-1) : (finalPath+_htmlExt));
     }
+
     return finalPath+appendScript;
   }
 
@@ -356,7 +421,7 @@
     _pending = 0;
     _urlHash = _loc.hash || '';
     _hashLst = (_urlHashOn && _urlHash && _urlHash.split(hashPathDelimiter)) || [];
-    _htmlDir = (_doc.body.getAttribute('components-loc') || '').replace(/\/+$/g,'').trim();
+    _htmlDir = (_doc.body.getAttribute('components-loc') || '').replace(/^\.\//,'').replace(/\/+$/g,'').trim();
     _htmlExt = (_doc.body.getAttribute('components-ext') || '').trim();
     processIncludes();
     setTimeout(function () {

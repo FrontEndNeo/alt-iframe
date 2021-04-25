@@ -1,8 +1,9 @@
 <div src="profileCard" replace></div>
 
 <script>
+  // wait for profileCard component to load/render
   alt.onReady( () => {
     setMenu( '#menuMyProfile' );
     getProfile(1);
-  } );
+  }, 50 );
 </script>
