@@ -3,7 +3,7 @@
  * - A simple native JavaScript (ES5) utility library to include partial HTML(s).
  * - You don't need a framework or jQuery!!!
  *
- * version: 1.8.0-ES5
+ * version: 1.8.1-ES5
  *
  * License: MIT
  *
@@ -52,23 +52,23 @@
 
   function parseElSrcPath ( el, attr, pContainer ) {
     var newSrc = oldSrc = (el.getAttribute(attr) || '').trim();
-    var cRoot, rxCompPath, pSrc, pPath;
+    var cRoot, rxCompPath, pSrc, pPath, pRoot;
 
     ((arguments.length === 2) && (pContainer = el.closest('[x-src]')));
 
     if (newSrc && pContainer && (!/^(\/\/|http:\/\/|https:\/\/)/i.test(newSrc))) {
-      cRoot  = _htmlDir.replace(/^\/+/,'');
+      pRoot  = getComponentsRootPath( pContainer.getAttribute('x-src') );
+      cRoot  = (_htmlDir || pRoot).replace(/^\/+/,'');
       rxCompPath = new RegExp('^((\.){0,2}\/)*'+(cRoot));
       if (rxCompPath.test(newSrc)) {
-        newSrc = newSrc.replace(rxCompPath, _htmlDir);
+        newSrc = newSrc.replace(rxCompPath, _htmlDir||pRoot);
       } else if (newSrc[0] !== '/') {
         pSrc   = (pContainer && pContainer.getAttribute('x-src')) || '';
-        pPath  = pSrc.substring(0, pSrc.lastIndexOf('/')+1) || (_htmlDir+'/');
+        pPath  = pSrc.substring(0, pSrc.lastIndexOf('/')+1) || ((_htmlDir||pRoot)+'/');
         newSrc = (pPath+newSrc).replace(/\/\.?\//,'/');
       }
     }
 
-    (newSrc !== oldSrc && console.log(newSrc, oldSrc));
     (newSrc !== oldSrc && el.setAttribute(attr, newSrc));
   }
 
@@ -208,17 +208,21 @@
     updateElContent(this.targetEl, resTxt);
   }
 
-  function setComponentsRootPath ( fromPath ) {
-    if (_htmlDir === '?' && fromPath.indexOf('/')>=0) {
+  function getComponentsRootPath ( fromPath ) {
+    var cRoot = '';
+    if (fromPath.indexOf('/')>=0) {
       var slashIdx1 = fromPath.indexOf('/');
       var slashIdx2 = fromPath.indexOf('/', slashIdx1+1);
       if ((fromPath[0] === '/' || fromPath[0] === '.') && (slashIdx2 > slashIdx1))  {
-        _htmlDir = fromPath.substring(0, slashIdx2);
+        cRoot = fromPath.substring(0, slashIdx2);
       } else {
-        _htmlDir = fromPath.substring(0, slashIdx1);
+        cRoot = fromPath.substring(0, slashIdx1);
       }
-      console.log('Components Root Folder:', _htmlDir);
     }
+    return cRoot;
+  }
+  function setComponentsRootPath ( fromPath ) {
+    (_htmlDir === '?' && fromPath.indexOf('/')>=0 && (_htmlDir = getComponentsRootPath(fromPath)));
   }
   function getSrcPath ( srcPath ) {
     var finalPath = (srcPath || '').trim();
@@ -343,6 +347,7 @@
     context = context || _doc;
     var childAltFrameElements = getAltIframeElements(context);
     childAltFrameElements.forEach(function(el){
+        parseElSrcPath(el, 'src');
         el.setAttribute('processed', '');
         loadExternalSrc(el);
       });
