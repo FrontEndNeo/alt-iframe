@@ -3,7 +3,7 @@
  * - A simple native JavaScript (ES5) utility library to include partial HTML(s).
  * - You don't need a framework or jQuery!!!
  *
- * version: 1.8.1-ES5
+ * version: 1.8.2-ES5
  *
  * License: MIT
  *
@@ -103,7 +103,7 @@
       xEl.setAttribute('processed', '');
     });
     getElements('img[src]:not([processed])', context).forEach(function (xEl) {
-      parseElSrcPath(xEl, 'src');
+      ((!/^data:/i.test(xEl.getAttribute('src'))) && (parseElSrcPath(xEl, 'src')));
       xEl.setAttribute('processed', '');
     });
   }

@@ -3,7 +3,7 @@
  * - A simple native JavaScript (ES6+) utility library to include partial HTML(s).
  * - You don't need a framework or jQuery!!!
  *
- * version: 1.8.1-ES6
+ * version: 1.8.2-ES6
  *
  * License: MIT
  *
@@ -98,12 +98,12 @@
   }
 
   function fixComponentElsSrcPath ( context ) {
-    getElements('link[rel="stylesheet"][href]:not([processed])', context).forEach(function (xEl) {
+    getElements('link[rel="stylesheet"][href]:not([processed])', context).forEach(xEl => {
       parseElSrcPath(xEl, 'href');
       xEl.setAttribute('processed', '');
     });
-    getElements('img[src]:not([processed])', context).forEach(function (xEl) {
-      parseElSrcPath(xEl, 'src');
+    getElements('img[src]:not([processed])', context).forEach( xEl => {
+      ((!/^data:/i.test(xEl.getAttribute('src'))) && (parseElSrcPath(xEl, 'src')));
       xEl.setAttribute('processed', '');
     });
   }
