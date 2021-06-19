@@ -3,7 +3,7 @@
  * - A simple native JavaScript (ES5) utility library to include partial HTML(s).
  * - You don't need a framework or jQuery!!!
  *
- * version: 1.9.0-ES5
+ * version: 1.9.1-ES5
  *
  * License: MIT
  *
@@ -219,7 +219,8 @@
       rxCompPath = new RegExp('^((\.){0,2}\/)*'+(cRoot));
       if (rxCompPath.test(newSrc)) {
         newSrc = newSrc.replace(rxCompPath, _htmlDir||pRoot);
-      } else if (newSrc[0] !== '/') {
+      // } else if (newSrc[0] !== '/') {
+      } else if (newSrc[0] === '.') {
         pSrc   = (pContainer && pContainer.getAttribute('x-src')) || '';
         pPath  = pSrc.substring(0, pSrc.lastIndexOf('/')+1) || ((_htmlDir||pRoot)+'/');
         newSrc = (pPath+newSrc).replace(/\/\.?\//,'/');
