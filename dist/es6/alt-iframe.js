@@ -3,7 +3,7 @@
  * - A simple native JavaScript (ES6+) utility library to include partial HTML(s).
  * - You don't need a framework or jQuery!!!
  *
- * version: 1.8.2-ES6
+ * version: 1.9.0-ES6
  *
  * License: MIT
  *
@@ -31,6 +31,145 @@
     }
   }
 
+  function _of ( x ) {
+    return (Object.prototype.toString.call(x)).slice(8,-1).toLowerCase();
+  }
+  function _is ( x, type ) {
+    if ((''+type)[0] == '*') {
+      return (_of(x).indexOf((''+type).toLowerCase().substring(1)) >= 0);
+    }
+    return ((''+type).toLowerCase().indexOf(_of(x)) >= 0);
+  }
+  function _isArr ( x ) {
+    return _is(x, 'array');
+  }
+  function _isObjLike ( x ) {
+    return ((typeof x == 'object') || (typeof x == 'function'));
+  }
+  function _isUndef ( x ) {
+    return _is(x, 'undefined');
+  }
+  function _isFn ( x ) {
+    return _is(x, 'function');
+  }
+  function _toDottedPath ( srcStr ) {
+    return (srcStr||'').trim().replace(/]/g,'').replace(/(\[)|(\\)|(\/)/g,'.').replace(/(\.+)/g,'.').replace(/\.+$/, '').replace(/^\.+/, '');
+  }
+  function _findInObj ( objSrc, pathStr, ifUndefined ) {
+    if (_isObjLike(objSrc) && pathStr) {
+      let pathList = pathStr.split('|').map(path=>path.trim());
+      pathStr = pathList.shift();
+      let nxtPath = pathList.join('|');
+
+      let unDef, retValue;
+      { let i = 0, path = _toDottedPath(pathStr).split('.'), len = path.length;
+        for (retValue = objSrc; i < len; i++) {
+          if (_isArr(retValue)) {
+            retValue = retValue[ parseInt(path[i], 10) ];
+          } else if (_isObjLike(retValue)) {
+            retValue = retValue[ path[i].trim() ];
+          } else {
+            retValue = unDef;
+            break;
+          }
+        }
+      }
+
+      if (_isUndef(retValue)) {
+        if (nxtPath) {
+          return _findInObj (objSrc, nxtPath, ifUndefined);
+        } else {
+          return (_isFn(ifUndefined))? ifUndefined.call(objSrc, objSrc, pathStr) : ifUndefined;
+        }
+      } else {
+        return retValue;
+      }
+
+    } else {
+      if (arguments.length == 3) {
+        return (_isFn(ifUndefined))? ifUndefined.call(objSrc, objSrc, pathStr) : ifUndefined;
+      } else {
+        return objSrc;
+      }
+    }
+  }
+  function _callFn ( fnName, context, args ) {
+    let fnRes, xFn = fnName;
+    if (_is(fnName, 'string')) {
+      let idxOfBrace = fnName.indexOf('(');
+      let xFnName = (idxOfBrace>0? fnName.substring(0, idxOfBrace) : fnName).replace(/\s/g,'');
+      if (xFnName) {
+        xFn = _findInObj(window, xFnName);
+      }
+    }
+
+    if (xFn && _isFn(xFn)) {
+      try {
+        fnRes = (xFn.apply(context, (_isUndef(args)? [] : (_isArr(args)? args : [args]))));
+      } catch(e) {
+        console.error('Error calling function:', xFn, ',', e);
+      }
+    } else {
+      console.error('Invalid function:', fnName);
+    }
+    return fnRes;
+  }
+
+  function formData ( formX, asQryStr ) {
+    let frmData = {};
+    let targetForm = (typeof formX === 'string') ? $1(formX) : formX;
+    let append = (key, val) => {
+      if (frmData.hasOwnProperty(key)) {
+        if (!Array.isArray(frmData[key])) {
+          frmData[key] = frmData[key] ? [frmData[key]] : []
+        };
+        (val && frmData[key].push(val));
+      } else {
+        frmData[key] = val;
+      }
+    };
+
+    [].slice.call(targetForm.elements).forEach(el=>{
+      if (!el.name || el.disabled || el.matches('form fieldset[disabled] *')) return;
+      if ((el.type === 'checkbox' || el.type === 'radio') && !el.checked) return;
+
+      if (el.tagName === 'SELECT') {
+        ((el.type === 'select-multiple') && el.selectedIndex >= 0 && append(el.name, []));
+        $$('option', el).forEach(opt=>{
+          opt.selected && append(el.name, opt.value);
+        });
+      } else {
+        append(el.name, el.value);
+      }
+
+    });
+
+    if (asQryStr) {
+      return toUrlQryStr(frmData);
+    }
+
+    return frmData;
+  }
+  function toUrlQryStr ( dataObj ) {
+    let qryStr = '';
+    Object.keys(dataObj).forEach(key=>{
+      if (Array.isArray(dataObj[key])) {
+        dataObj[key].forEach(val=>{
+          qryStr += '&' + key + '=' + val;
+        });
+      } else {
+        qryStr += '&' + key + '=' + dataObj[key];
+      }
+    });
+    return encodeURI(qryStr);
+  }
+
+  function $1 (selector, el) {
+    return getElements(selector, el)[0];
+  }
+  function $$ (selector, el) {
+    return getElements (selector, el);
+  }
   function getElements (selector, el) {
     el = ((typeof el == 'string') && _doc.querySelector(el)) || el || _doc;
     return Array.prototype.slice.call(el.querySelectorAll(selector));
@@ -151,7 +290,7 @@
             handleHashNotFound();
           }
         } else if (!(getAltIframeElements().length)) {
-          let localHashEl = _doc.querySelector(_urlHash);
+          let localHashEl = $1(_urlHash);
           if (localHashEl) {
             localHashEl.scrollIntoView(true);
             _urlHash = '';
@@ -201,6 +340,22 @@
     loadUrlHash();
   }
 
+  function onXhrStateChange ( resTxt, res, options) {
+    if (_isUndef(resTxt)) {
+      resTxt = ('Could not '+(options.method)+' '+res.url);
+      if (options.onError) {
+        resTxt = _callFn(options.onError, null, [resTxt, res.status, res]);
+      }
+    } else {
+      if (options.onSuccess) {
+        resTxt = _callFn(options.onSuccess, null, [resTxt, res.status, res]);
+      }
+    }
+    if (!_isUndef(resTxt)) {
+      updateElContent(options.targetEl, resTxt);
+    }
+  }
+
   function getComponentsRootPath ( fromPath ) {
     let cRoot = '';
     if (fromPath.indexOf('/')>=0) {
@@ -247,7 +402,8 @@
     return finalPath+appendScript;
   }
 
-  function loadExternalSrc (targetEl, srcPath) {
+  function loadExternalSrc (targetEl, srcPath, options) {
+    options = options || {method: 'GET'};
     srcPath = getSrcPath(srcPath || (targetEl.getAttribute('src')) );
     targetEl.setAttribute('x-src', srcPath);
     targetEl.removeAttribute('src');
@@ -257,17 +413,54 @@
         targetEl.setAttribute('x-js', srcPath.replace(/\.[a-z]{3,4}\+$/, '.js'));
         srcPath = srcPath.substring(0, srcPath.length-1);
       }
+
+      let xhrMethod   = options.method || 'GET';
+      let xhrData     = options.data;
+      let xhrDataType = {}.toString.call(xhrData).slice(8,-1).toLowerCase();
+      let urlQryStr   = (xhrDataType == 'string')? xhrData : '';
+
+      if (xhrData) {
+        if (xhrMethod == 'GET') {
+          if (xhrDataType === 'object') {
+            urlQryStr = toUrlQryStr(xhrData);
+          }
+          srcPath = srcPath + ((urlQryStr && srcPath.indexOf('?')<0)? '?' : '') + urlQryStr;
+          srcPath = srcPath.replace(/\?\&/,'?').replace(/\&\&/g, '&');
+        } else {
+          if (xhrDataType === 'object') {
+            xhrData = JSON.stringify(xhrData);
+          }
+        }
+      }
+
+      options.targetEl = targetEl;
+      options.method   = xhrMethod;
+      let fetchOptions = { method: xhrMethod };
+      if (xhrData) fetchOptions.body = xhrData;
+
       if (targetEl.hasAttribute('await')) {
         (async () => {
-          const res = await fetch(srcPath).catch( e => null );
+          let resTxt;
+          const res = await fetch(srcPath, fetchOptions).catch( e => null );
           if (res && res.ok) {
-            updateElContent(targetEl, await res.text());
+            resTxt = await res.text();
           }
+          onXhrStateChange(resTxt, res, options);
         })();
       } else {
-        fetch(srcPath)
-        .then( res => res.text() )
-        .then( resText => updateElContent(targetEl, resText) )
+        let fetchRes;
+        fetch(srcPath, fetchOptions)
+        .then( res => {
+          fetchRes = res;
+          let resTxt;
+          if (res && res.ok) {
+            resTxt = res.text();
+          }
+          return resTxt;
+        })
+        .then( resTxt => {
+          onXhrStateChange(resTxt, fetchRes, options);
+        })
         .catch( e => null );
       }
     }
@@ -290,33 +483,25 @@
   function onNavElClick ( onHashNav, onHashPath ) {
 
     let clickedEl = this;
+    let isForm = clickedEl.tagName == 'FORM';
 
-    if (onHashNav && onHashPath && clickedEl.tagName !== 'FORM') {
+    if (onHashNav && onHashPath && !isForm) {
       clickedEl.click();
       return;
     }
 
-    if (clickedEl.tagName == 'FORM' && (!clickedEl.checkValidity())) {
+    if (isForm && (!clickedEl.checkValidity())) {
       clickedEl.reportValidity();
       return false;
     }
 
     let ifCheck = clickedEl.getAttribute('if');
     if (ifCheck) {
-      let idxOfBrace = ifCheck.indexOf('(');
-      let ifFnName = (idxOfBrace>0? ifCheck.substring(0, idxOfBrace) : ifCheck).replace(/\s/g,'');
-      if (ifFnName) {
-        let isOk;
-        try {
-          isOk = (window[ifFnName].call(clickedEl));
-        } catch(e) {
-          console.error('Function NOT Found:', ifFnName);
-        }
-        if (!isOk) return false;
-      }
+      let isOk = _callFn(ifCheck, clickedEl);
+      if (!isOk) return false;
     }
 
-    let targetEl = _doc.querySelector( clickedEl.getAttribute('x-target') );
+    let targetEl = $1( clickedEl.getAttribute('x-target') );
 
     if (targetEl) {
       targetEl[clickedEl.hasAttribute('replace')? 'setAttribute': 'removeAttribute']('replace', '');
@@ -328,11 +513,28 @@
         targetEl.removeAttribute('await', '');
       }
 
-      updateHistory( clickedEl );
+      if (!isForm) {
+        updateHistory( clickedEl );
+      }
 
       let xSrc = clickedEl.getAttribute('x-href').substring(1);
       (/^[! ]/.test(xSrc)) && (xSrc = xSrc.substring(1).trim());
-      loadExternalSrc(targetEl, xSrc);
+
+      if (isForm) {
+        xSrc = xSrc || clickedEl.getAttribute('action');
+        let formMethod = clickedEl.getAttribute('method') || 'GET';
+        let dataType   = clickedEl.hasAttribute('form-data')? 'FormData' : 'JSON';
+        let frmData    = formMethod == 'GET'? formData(clickedEl, true) : (/FormData/gi.test(dataType)? new FormData( clickedEl ) : formData(clickedEl));
+        let onSuccess  = clickedEl.onSuccess || clickedEl.getAttribute('onsuccess') || '';
+        let onError    = clickedEl.onError   || clickedEl.getAttribute('onerror') || '';
+        let options    = { method:formMethod, data:frmData, onSuccess:onSuccess, onError:onError };
+        clickedEl.onSuccess = '';
+        clickedEl.onError   = '';
+
+        loadExternalSrc(targetEl, xSrc, options);
+      } else {
+        loadExternalSrc(targetEl, xSrc);
+      }
     } else {
       console.warn('Target element not found. Invalid target specified in element', clickedEl);
     }
@@ -354,6 +556,14 @@
 
     getElements('form:not([onsubmit]):not([href])', context).forEach(formEl=>{
       (!formEl.getAttribute('action') && formEl.setAttribute('onsubmit', 'return false;'));
+    });
+
+    getElements('form[action][target^="#"]', context).forEach(formEl=>{
+      let formAction = formEl.getAttribute('action');
+      if (formAction) {
+        formEl.setAttribute('href', '#'+(formAction.replace(/^#+/,'')));
+        (!formEl.hasAttribute('onsubmit')) && formEl.setAttribute('onsubmit', 'return false;');
+      }
     });
 
     getElements('[href^="#"][target^="#"]', context).forEach(el=>{
@@ -404,6 +614,33 @@
     }
   }
 
+  function submitForm ( formId, options ) {
+    options = options || {method: '', url:'', target:'', onSuccess:'', onError:''}
+    let targetForm = $1(formId);
+    if (targetForm) {
+      if (options.method) {
+        targetForm.setAttribute('method', options.method);
+      }
+      if (options.url) {
+        targetForm.setAttribute('x-href', '#'+(options.url.replace(/^#+/,'')) );
+      }
+      if (options.target) {
+        targetForm.setAttribute('x-target', options.target);
+      }
+      if (options.onSuccess) {
+        targetForm.onSuccess = options.onSuccess;
+      }
+      if (options.onError) {
+        targetForm.onError = options.onError;
+      }
+      let submitEvent = document.createEvent("Event");
+      submitEvent.initEvent("submit", true, true);
+      targetForm.dispatchEvent(submitEvent);
+    } else {
+      console.error('Form NOT FOUND!', formId);
+    }
+  }
+
   function onReady ( fnX, delay ) {
     if (typeof fnX === 'function') {
       _onReadyQ.push({fn: fnX, delay: delay||0});
@@ -443,6 +680,6 @@
     _doc.addEventListener('DOMContentLoaded', onDocReady);
   }
 
-  _g.alt = _g.aif = { load, onReady, getData };
+  _g.alt = _g.aif = { load, onReady, getData, formData, submitForm };
 
 })(this);

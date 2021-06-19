@@ -1,0 +1,132 @@
+<div class="container-fluid">
+
+  <h2>Async Form</h2>
+
+  <form id="myForm" name="myForm" method="POST" action="https://echo-form.herokuapp.com/"
+    target="#response-container"
+    >
+    <!--
+      [form-data] to send data using new FormData('#myForm'); default: JSON
+      [onsuccess="asyncForm.onSuccess()"] to handle success response
+      [onerror="asyncForm.onError()"] to handle any error
+    -->
+
+    <section class="row">
+
+      <div class="col-lg-2 col-md-4 col-sm-6 col-xs-12">
+        <label>Enter Your Name *:<br>
+          <input type="text" name="fieldA_Name1" value="Tom" placeholder="Enter First Name" required><br>
+          <input type="text" name="fieldA_Name1" value="T" placeholder="Enter Last Name">
+        </label>
+      </div>
+
+      <div class="col-lg-2 col-md-4 col-sm-6 col-xs-12">
+        <label>Enter Friend's Name:<br>
+          <input type="TEXT" name="fieldB_Name2" value="Jerry" placeholder="Enter First Name"><br>
+          <input type="TEXT" name="fieldB_Name2" value="J" placeholder="Enter Last Name">
+        </label>
+      </div>
+
+      <div class="col-lg-2 col-md-4 col-sm-6 col-xs-12">
+        <label>Range:<br>
+          <input type="range" name="fieldC_Range">
+        </label>
+      </div>
+
+      <div class="col-lg-2 col-md-4 col-sm-6 col-xs-12">
+        <label>Active:<br>
+          <input type="CHECKBOX" name="fieldD_Active" value="true" checked>
+        </label>
+      </div>
+
+      <div class="col-lg-2 col-md-4 col-sm-6 col-xs-12">
+        Fruits:<br>
+        <label><input type="CHECKBOX" name="fieldE_Fruits" value="Apple" checked> Apple</label>
+        <label><input type="CHECKBOX" name="fieldE_Fruits" value="Orange" checked> Orange</label>
+      </div>
+
+      <div class="col-lg-2 col-md-4 col-sm-6 col-xs-12">
+        Rating:<br>
+        <label><input type="RADIO" name="fieldF_Rank" value="1"> OK</label>
+        <label><input type="RADIO" name="fieldF_Rank" value="2.5"> AVG</label>
+        <label><input type="RADIO" name="fieldF_Rank" value="5" checked> BEST</label>
+      </div>
+
+      <div class="col-lg-2 col-md-4 col-sm-6 col-xs-12">
+        <label>City:<br>
+          <select name="fieldG_City">
+            <option value="">- select -</option>
+            <option value="X">X</option>
+            <option value="Y" selected>Y</option>
+            <option value="Z">Z</option>
+          </select>
+        </label>
+      </div>
+
+      <div class="col-lg-2 col-md-4 col-sm-6 col-xs-12">
+        <label>Fav:<br>
+          <select name="fieldH_Fav" multiple>
+            <option value="A" selected>A</option>
+            <option value="B">B</option>
+            <option value="C" selected>C</option>
+            <option value="D">D</option>
+          </select>
+        </label>
+      </div>
+
+      <div class="col-lg-2 col-md-4 col-sm-6 col-xs-12">
+        <label>Comments<br>
+          <textarea name="fieldJ_Comments" cols="30" rows="10">Lorem ipsum dolor</textarea>
+        </label>
+      </div>
+    </section>
+
+    <hr>
+
+    <section>
+      <div>
+        Method:
+        <label><input type="radio" name="reqMethod" value="GET"  onclick="document.getElementById('myForm').setAttribute('method','GET')"> GET</label>
+        <label><input type="radio" name="reqMethod" value="POST" onclick="document.getElementById('myForm').setAttribute('method','POST')" checked> POST</label>
+      </div>
+
+      <div>
+        Response Type:
+        <label><input type="radio" name="_" value="HTML" checked> HTML</label>
+        <label><input type="radio" name="_" value="JSON" > JSON</label>
+        <label><input type="radio" name="_" value="TEXT" > TEXT</label>
+      </div>
+
+      <input type="submit" name="fieldK_button" value="Submit!">
+    </section>
+  </form>
+
+  <hr>
+
+  <h2>Response:</h2>
+  <div id="response-container" style="margin: 10px; padding: 10px; border: 1px dotted orange;"></div>
+
+</div>
+
+
+<script>
+
+  var asyncForm = {
+    onSuccess : function (resText, statusCode, xhr) {
+      console.log('success', arguments);
+      return resText;
+    },
+
+    onError : function (resText, statusCode, xhr) {
+      console.log('error', arguments);
+      return resText;
+    }
+  };
+
+
+  (function () {
+
+    setMenu('#asyncForm');
+
+  })();
+</script>
