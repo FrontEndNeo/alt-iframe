@@ -30,3 +30,13 @@ A simple javascript utility library to include partial html (iframe alternate) w
 
     </body>
     </html>
+    
+  ---
+  
+  [Preview Example-1](https://frontendneo.github.io/alt-iframe/example)
+  
+  [Preview Example-2](https://frontendneo.github.io/alt-iframe/example2)
+  
+  [Preview Example-3](https://frontendneo.github.io/alt-iframe/example3)
+  
+  
