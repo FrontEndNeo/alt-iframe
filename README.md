@@ -33,10 +33,9 @@ A simple javascript utility library to include partial html (iframe alternate) w
     
   ---
   
-  [Preview Example-1](https://frontendneo.github.io/alt-iframe/example)
+  <a href="https://frontendneo.github.io/alt-iframe/example" target="_blank">Preview Example-1</a>
   
-  [Preview Example-2](https://frontendneo.github.io/alt-iframe/example2)
+  <a href="https://frontendneo.github.io/alt-iframe/example2" target="_blank">Preview Example-2</a>
   
-  [Preview Example-3](https://frontendneo.github.io/alt-iframe/example3)
-  
+  <a href="https://frontendneo.github.io/alt-iframe/example3" target="_blank">Preview Example-3</a>
   
