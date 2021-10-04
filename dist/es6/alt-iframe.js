@@ -3,7 +3,7 @@
  * - A simple native JavaScript (ES6+) utility library to include partial HTML(s).
  * - You don't need a framework or jQuery!!!
  *
- * version: 1.9.1-ES6
+ * version: 1.9.2-ES6
  *
  * License: MIT
  *
@@ -397,7 +397,16 @@
         }
       }
 
-      _htmlExt && (!((new RegExp(_htmlExt+'$')).test(finalPath))) && (finalPath = (finalPath[finalPath.length-1] == '/')? finalPath.substring(0, finalPath.length-1) : (finalPath+_htmlExt));
+      // _htmlExt && (!((new RegExp(_htmlExt+'$')).test(finalPath))) && (finalPath = (finalPath[finalPath.length-1] == '/')? finalPath.substring(0, finalPath.length-1) : (finalPath+_htmlExt));
+      if (_htmlExt && (!((new RegExp(_htmlExt+'$')).test(finalPath)))) {
+        if (/\/\/$/.test(srcPath)) {
+          let cNames = finalPath.split('/');
+          let finalCompName = cNames[cNames.length-2];
+          finalPath = finalPath+finalCompName+_htmlExt;
+        } else if (finalPath[finalPath.length-1] !== '/') {
+          finalPath = finalPath+_htmlExt;
+        }
+      }
     }
 
     return finalPath+appendScript;
